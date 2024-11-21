@@ -1,15 +1,23 @@
 ---
 title: "Lab 9: Data Simulation Exploration"
-author: "Your name here!"
-format: html
+author: "Eva Moylan"
+date: "11/21/24"
+format: 
+  html:  
+    embed-resources: true
+    code-tools: true
 editor: source
-embed-resources: true
+execute: 
+  echo: true
+code-fold: true
+theme: sandstone
 ---
 
 ```{r}
 #| label: setup
+#| message: false
 
-
+library(tidyverse)
 ```
 
 ## Random Babies Simulation
@@ -33,13 +41,30 @@ for it to be compatible with `map_int()`!
 ```{r}
 #| label: function-simulation-for-random-babies
 
-randomBabies <- function(nBabies){
-  ...
+randomBabies <- function(n = 4){
+  
+  baby_data <- tibble(baby = 1:n,
+                      parent = sample(1:n,
+                                      size = n,
+                                      replace = FALSE)
+  )
+  
+  baby_pairs <- baby_data |>
+    mutate(correct_pair = if_else(parent == baby,
+                                  TRUE,
+                                  FALSE)) |>
+    summarize(correct_pair = sum(correct_pair)) |>
+    pull(correct_pair)
+  
+  return(baby_pairs) #return number of correct pairs
+                  
 }
 
 results <- map_int(.x = 1:10000,
-                   .f = ___
+                   .f = ~ randomBabies(n = 4)
                    )
+
+results
 ```
 
 **2. Create a table displaying the proportion of simulations where 0, 1, 2, 3, and 4 babies were given to their correct parent(s).** Hint: A `pivot_wider()` will be helpful here!
@@ -53,16 +78,19 @@ You may find the following code helpful:
 
 ```{r}
 #| eval: false
+#| output: false
 
-enframe(results, 
+results <- enframe(results, 
         name = "simulation_number", 
-        value = "ncorrect")
+        value = "Correct_Pairs")
 ```
 :::
 
 ```{r}
 #| label: table-for-random-babies
 
+results |>
+  summarize(freq_pairs = )
 
 ```
 
