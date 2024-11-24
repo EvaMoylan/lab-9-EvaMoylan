@@ -18,6 +18,8 @@ theme: sandstone
 #| message: false
 
 library(tidyverse)
+library(kableExtra)
+
 ```
 
 ## Random Babies Simulation
@@ -77,7 +79,6 @@ You may find the following code helpful:
 
 ```{r}
 #| eval: false
-#| output: false
 
 results <- enframe(results, 
         name = "simulation_number", 
@@ -88,17 +89,26 @@ results <- enframe(results,
 
 ```{r}
 #| label: table-for-random-babies
-#| fig-cap: "Table 1: Proportion of simulations where 0, 1, 2, 3 or 4 babies were given to their correct parents."
 
+#Convert to dataframe
+results <- enframe(results, 
+        name = "simulation_number", 
+        value = "Correct_Pairs")
+
+#Make table
 results |>
-  count(Correct_Pairs) |> 
-  pivot_wider(names_from = "Correct_Pairs",
+  count(Correct_Pairs) |>
+  pivot_wider(names_from = Correct_Pairs,
               values_from = n) |>
   reframe(across(.cols = everything(),
                  .f = ~(.x / 10000))
           ) |>
   mutate('3' = as.integer('0'),
-         .after = '2') #Looks like there are no 3s, so add that to the table
+         .after = '2') |> #Looks like there are no 3s, so add that to the table
+  knitr::kable("html",
+               align = "c",
+               caption = "Table 1: Proportion of simulations where 0, 1, 2, 3, and 4 babies were given to their correct parents.") |> 
+  kable_styling(bootstrap_options = "striped")
 
 ```
 **3. Now create a barplot showing the proportion of simulations where 0, 1, 2, 3, and 4 babies were given to their correct parent(s).** 
@@ -117,6 +127,20 @@ geom_bar(mapping = aes(y = after_stat(count) / sum(after_stat(count))
 
 ```{r}
 #| label: visualization-for-random-babies
+
+results |>
+  ggplot(aes(x = Correct_Pairs)) +
+  geom_bar(mapping = aes(y = after_stat(count) / sum(after_stat(count)), 
+           fill = after_stat(count) / sum(after_stat(count)))) +
+  theme_bw() +
+  scale_fill_gradient(low = "tomato3",
+                      high = "steelblue") +
+  scale_y_continuous(limits = c(0,
+                                0.4)) +
+  theme(legend.position = "none")+
+  labs(y = NULL,
+       x = "Number of Correct Pairings",
+       title = "Simulated Proportion of Correct Baby-Parent Pairings") 
 
 ```
 
@@ -149,6 +173,7 @@ This is not the case, so let's do some exploring!
 I've provided some skeleton code to get you started. :) 
 
 ```{r}
+#| eval: false
 simulate_means <- function(n, df){
   map_dbl(.x = ___, 
           .f = ~rchisq(n = 100, ___) %>% mean()
@@ -162,6 +187,7 @@ simulate_means <- function(n, df){
 -  **`df` = 10**
 
 ```{r}
+#| eval: false
 grid <- crossing(n = ___, 
                  df = 5)
 ```
@@ -174,6 +200,7 @@ You will want to use the `unnest()` function to extract the results of the
 :::
 
 ```{r}
+#| eval: false
 all_simulations <- grid |> 
   mutate(simulated_means = pmap(.l = list(___), 
                                 .f = simulate_means)
