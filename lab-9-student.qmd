@@ -183,7 +183,8 @@ This is not the case, so let's do some exploring!
 I've provided some skeleton code to get you started. :) 
 
 ```{r}
-#| eval: false
+#| label: simulate-means-function
+
 simulate_means <- function(n, df){
   map_dbl(.x = 1:n, 
           .f = ~rchisq(n = 100, df = df) %>% mean()
@@ -198,7 +199,8 @@ simulate_means <- function(n, df){
 -  **`df` = 10**
 
 ```{r}
-#| eval: false
+#| label: create-grid
+
 grid <- crossing(n = 10^seq(from = 1, 
                          to = 4,
                          by = 1), 
@@ -214,12 +216,13 @@ You will want to use the `unnest()` function to extract the results of the
 :::
 
 ```{r}
-#| eval: false
+#| label: simulate-across-grid
+
 all_simulations <- grid |> 
   mutate(simulated_means = pmap(.l = list(n = n, df = df), 
                                 .f = simulate_means)
          ) |> 
-  unnest(simulated_means) 
+  unnest(cols = simulated_means) 
 
 all_simulations
 ```
@@ -230,6 +233,29 @@ Hint: Make sure your columns have descriptive names!
 ```{r}
 #| label: table-of-simulated Means
 
+all_simulations |>
+  pivot_wider(id_cols = df,
+              names_from = n,
+              values_from = simulated_means,
+              values_fn = mean) |>
+  rename("Degrees of Freedom" = df,
+         "Mean (n = 10)" = "10",
+         "Mean (n = 100)" = "100",
+         "Mean (n = 1000)" = "1000",
+         "Mean (n = 10000)" = "10000") |>
+  gt() |>
+  tab_header(title = "Simulated Chi-Squared Means",
+             subtitle = "Average simulated means across four sample sizes."
+  ) |>
+  tab_style(
+    style = cell_text(align = "center",
+                      weight = "bold"), 
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = cell_text(align = "center"), 
+    locations = cells_body()
+  )
 
 ```
 
@@ -242,6 +268,30 @@ sizes between the simulations.
 
 ```{r}
 #| label: plot-of-simulated Means
+#| message: false
+
+all_simulations |>
+  mutate(across(.cols = n:df,
+                .fns = ~as.character(.x)),
+         n = fct_recode(n,
+                        `n = 10` = "10",
+                        `n = 100` = "100",
+                        `n = 1000` = "1000",
+                        `n = 10000` = "10000"),
+         df = fct_recode(df,
+                         `Degrees of Freedom = 10` = "10")) |>
+  ggplot(mapping = aes(x = simulated_means)) +
+  geom_histogram(color = "white") +
+  facet_grid(n ~ df,
+             scales = "free_y") +
+  geom_vline(xintercept = 10, 
+             color = "tomato") +
+  theme(axis.text.y = element_text(size = 7),
+        aspect.ratio = 0.2) +
+  labs(y = NULL,
+       x = "Simulated Means",
+       subtitle = "Frequency of Means",
+       title = "Simulated Means for Four Different Sample Sizes")
 
 
 ```
