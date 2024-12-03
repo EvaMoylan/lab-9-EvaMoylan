@@ -19,6 +19,7 @@ theme: sandstone
 
 library(tidyverse)
 library(gt)
+library(scales)
 
 ```
 
@@ -117,7 +118,10 @@ results |>
   tab_style(
     style = cell_text(align = "center"), 
     locations = cells_body()
-  )
+  ) |>
+  fmt_percent(columns = everything())
+
+#Change made after submission: using fmt_percent to re-label proportions
 
 ```
 **3. Now create a barplot showing the proportion of simulations where 0, 1, 2, 3, and 4 babies were given to their correct parent(s).** 
@@ -145,12 +149,15 @@ results |>
   theme_bw() +
   scale_fill_gradient(low = "tomato3",
                       high = "steelblue") +
-  scale_y_continuous(limits = c(0,
+  scale_y_continuous(labels = label_percent(suffix = "%"),
+                     limits = c(0,
                                 0.4)) +
   theme(legend.position = "none") +
   labs(y = NULL,
        x = "Number of Correct Pairings",
-       title = "Simulated Proportion of Correct Baby-Parent Pairings") 
+       title = "Simulated Proportion of 0 to 4 Correct Baby-Parent Pairings") 
+
+#Changes made after submission: using label_percent to re-label the y axis, and changing wording of the title.
 
 ```
 
@@ -219,7 +226,8 @@ You will want to use the `unnest()` function to extract the results of the
 #| label: simulate-across-grid
 
 all_simulations <- grid |> 
-  mutate(simulated_means = pmap(.l = list(n = n, df = df), 
+  mutate(simulated_means = pmap(.l = list(n = n, 
+                                          df = df), 
                                 .f = simulate_means)
          ) |> 
   unnest(cols = simulated_means) 
@@ -245,7 +253,7 @@ all_simulations |>
          "Mean (n = 10000)" = "10000") |>
   gt() |>
   tab_header(title = "Simulated Chi-Squared Means",
-             subtitle = "Average simulated means across four sample sizes."
+             subtitle = "Average simulated means across four simulation sizes."
   ) |>
   tab_style(
     style = cell_text(align = "center",
@@ -256,6 +264,8 @@ all_simulations |>
     style = cell_text(align = "center"), 
     locations = cells_body()
   )
+
+#Change made after submission: Subtitle changed from 'sample sizes' to 'simulation sizes'
 
 ```
 
@@ -291,8 +301,9 @@ all_simulations |>
   labs(y = NULL,
        x = "Simulated Means",
        subtitle = "Frequency of Means",
-       title = "Simulated Means for Four Different Sample Sizes")
+       title = "Simulated Means for Four Different Simulation Sizes")
 
+#Change made after submission: Subtitle changed from 'sample sizes' to 'simulation sizes'
 
 ```
 
